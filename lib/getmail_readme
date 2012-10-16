@@ -1,0 +1,5 @@
+To temporarily stop collection of mail create a file called do_not_run_getmail in /home/vmail i.e.
+
+touch /home/vmail/do_not_run_getmail
+
+and delete the file to begin collection again.
