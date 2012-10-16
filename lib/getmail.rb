@@ -7,46 +7,60 @@ CONFIG_FILE = File.join(ENV['HOME'], '.getmailrb')
 LOG_DIR = '/var/log/getmail'
 LOG_FILE = 'getmail.log'
 LOG_PATH = File.join(LOG_DIR, LOG_FILE)
-STOP_FILE = '/home/vmail/do_not_run_getmail'
+#STOP_FILE = '/home/vmail/do_not_run_getmail'
 GETMAIL_PATH = '/usr/bin/getmail'
 #RCFILES = %w(bobnickyadslrc bobthegreenshrc)
-RCFILES = %w(bobnickyadslrc bobthegreenshrc nickythegreenshrc brynthegreenshrc lucathegreenshrc vickythegreenshrc)
-LOCK_FILE = '/home/vmail/.getmail/getmail.lock'
-
-def getmail_call
-  GETMAIL_PATH + RCFILES.inject("") { |p, file| "#{p} --rcfile=#{file}"}
-end
+#RCFILES = %w(bobnickyadslrc bobthegreenshrc nickythegreenshrc brynthegreenshrc lucathegreenshrc vickythegreenshrc)
+#LOCK_FILE = '/home/vmail/.getmail/getmail.lock'
 
 #logger = Logger.new('/var/log/getmail/getmail.log', 5, 1024000)
 logger = Logger.new(LOG_PATH, 5, 1024000)
 logger.level = Logger::DEBUG
 
-config = nil
-if File.exist? CONFIG_FILE
-	begin
-		logger.debug "loading config file from #{CONFIG_FILE}"
-		config = YAML.load_file CONFIG_FILE
-	rescue Exception => e
-		logger.fatal e.message
-else
-	logger.fatal "could not find config file #{CONFIG_FILE}"
+def config_loaded
+	res = false
+	if File.exist? CONFIG_FILE
+		begin
+			logger.debug "loading config file from #{CONFIG_FILE}"
+			config = YAML.load_file CONFIG_FILE
+			res = true
+		rescue Exception => e
+			logger.fatal e.message
+	else
+		logger.fatal "could not find config file #{CONFIG_FILE}"
+	end
+	res
 end
 
-return unless config
-
-mounts_ok = true
-
-if config.has_key?(:reqd_mount)
-	if 
-
-
+def mounts_ok
+	res = true
+	if config.has_key?(:reqd_mount)
+		if Regexp.new(config[:reqd_mount]).match(`mount`)
+			logger.debug "mount #{config[:reqd_mount]} found"
+		else
+			res = false
+			logger.fatal "mount #{config[:reqd_mount]} could not be found"
+		end
+	end
+	res
 end
 
-if File.exist? STOP_FILE
+def getmail_call
+  GETMAIL_PATH + rcfiles.inject("") { |p, file| "#{p} --rcfile=#{file}"}
+end
+
+return unless config_loaded
+return unless mounts_ok
+
+rcfiles = config[:rcfiles]
+stop_file = config[:stop_file]
+lock_file = config[:lock_file]
+
+if File.exist? stop_file
   logger.info { "Stop file found, mail will NOT be checked" }
 else
   begin
-    Lockfile.new(LOCK_FILE, :retries => 0) do
+    Lockfile.new(lock_file, :retries => 0) do
       logger.info { "Checking email" }
       logger.debug { "calling #{getmail_call}" }
       res = `#{getmail_call}`
