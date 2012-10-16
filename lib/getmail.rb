@@ -34,9 +34,16 @@ end
 
 return unless config
 
+mounts_ok = true
+
+if config.has_key?(:reqd_mount)
+	if 
+
+
+end
 
 if File.exist? STOP_FILE
-  logger.debug { "Stop file found, mail will NOT be checked" }
+  logger.info { "Stop file found, mail will NOT be checked" }
 else
   begin
     Lockfile.new(LOCK_FILE, :retries => 0) do
