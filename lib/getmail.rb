@@ -1,26 +1,39 @@
 require 'logger'
 require 'rubygems'
 require 'lockfile'
+require 'yaml'
 
+CONFIG_FILE = File.join(ENV['HOME'], '.getmailrb')
 LOG_DIR = '/var/log/getmail'
 LOG_FILE = 'getmail.log'
+LOG_PATH = File.join(LOG_DIR, LOG_FILE)
 STOP_FILE = '/home/vmail/do_not_run_getmail'
 GETMAIL_PATH = '/usr/bin/getmail'
 #RCFILES = %w(bobnickyadslrc bobthegreenshrc)
 RCFILES = %w(bobnickyadslrc bobthegreenshrc nickythegreenshrc brynthegreenshrc lucathegreenshrc vickythegreenshrc)
 LOCK_FILE = '/home/vmail/.getmail/getmail.lock'
 
-def log_path
-  File.join(LOG_DIR, LOG_FILE)
-end
-
 def getmail_call
   GETMAIL_PATH + RCFILES.inject("") { |p, file| "#{p} --rcfile=#{file}"}
 end
 
 #logger = Logger.new('/var/log/getmail/getmail.log', 5, 1024000)
-logger = Logger.new(log_path, 5, 1024000)
+logger = Logger.new(LOG_PATH, 5, 1024000)
 logger.level = Logger::DEBUG
+
+config = nil
+if File.exist? CONFIG_FILE
+	begin
+		logger.debug "loading config file from #{CONFIG_FILE}"
+		config = YAML.load_file CONFIG_FILE
+	rescue Exception => e
+		logger.fatal e.message
+else
+	logger.fatal "could not find config file #{CONFIG_FILE}"
+end
+
+return unless config
+
 
 if File.exist? STOP_FILE
   logger.debug { "Stop file found, mail will NOT be checked" }
