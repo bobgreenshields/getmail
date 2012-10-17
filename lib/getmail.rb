@@ -48,21 +48,21 @@ def mounts_ok
 end
 
 def getmail_call
-  GETMAIL_PATH + rcfiles.inject("") { |p, file| "#{p} --rcfile=#{file}"}
+  GETMAIL_PATH + @rcfiles.inject("") { |p, file| "#{p} --rcfile=#{file}"}
 end
 
 #return unless config_loaded
 #return unless mounts_ok
 
 if config_loaded and mounts_ok
-	rcfiles = @config[:rcfiles]
-	stop_file = @config[:stop_file]
-	lock_file = @config[:lock_file]
+	@rcfiles = @config[:rcfiles]
+	@stop_file = @config[:stop_file]
+	@lock_file = @config[:lock_file]
 
-	if File.exist? stop_file
+	if File.exist? @stop_file
 		@logger.info { "Stop file found, mail will NOT be checked" }
 	else
-		Lockfile.new(lock_file, :retries => 0) do
+		Lockfile.new(@lock_file, :retries => 0) do
 			begin
 				@logger.info { "Checking email" }
 				@logger.debug { "calling #{getmail_call}" }
