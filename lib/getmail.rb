@@ -26,11 +26,12 @@ def config_loaded
 			res = true
 		rescue Exception => e
 			logger.fatal e.message
+		end # rescue
 	else
 		logger.fatal "could not find config file #{CONFIG_FILE}"
-	end
+	end # if
 	res
-end
+end # def
 
 def mounts_ok
 	res = true
