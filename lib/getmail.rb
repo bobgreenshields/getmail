@@ -59,19 +59,16 @@ lock_file = config[:lock_file]
 if File.exist? stop_file
   logger.info { "Stop file found, mail will NOT be checked" }
 else
-  begin
-    Lockfile.new(lock_file, :retries => 0) do
-      logger.info { "Checking email" }
-      logger.debug { "calling #{getmail_call}" }
-      res = `#{getmail_call}`
-      if $?.to_i == 0
-        logger.info { res }
-      else
-        logger. error { res }
-      end
-    end
-  rescue Lockfile::MaxTriesLockError => e
-    logger.info { "Another fetcher is running" }
-  end
+	Lockfile.new(lock_file, :retries => 0) do
+		logger.info { "Checking email" }
+		logger.debug { "calling #{getmail_call}" }
+		res = `#{getmail_call}`
+		if $?.to_i == 0
+			logger.info { res }
+		else
+			logger. error { res }
+		end
+	rescue Lockfile::MaxTriesLockError => e
+		logger.info { "Another fetcher is running" }
 end
 
