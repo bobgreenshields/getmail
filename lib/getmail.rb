@@ -14,21 +14,21 @@ GETMAIL_PATH = '/usr/bin/getmail'
 #LOCK_FILE = '/home/vmail/.getmail/getmail.lock'
 
 #logger = Logger.new('/var/log/getmail/getmail.log', 5, 1024000)
-logger = Logger.new(LOG_PATH, 5, 1024000)
-logger.level = Logger::DEBUG
+@logger = Logger.new(LOG_PATH, 5, 1024000)
+@logger.level = Logger::DEBUG
 
 def config_loaded
 	res = false
 	if File.exist? CONFIG_FILE
 		begin
-			logger.debug "loading config file from #{CONFIG_FILE}"
+			@logger.debug "loading config file from #{CONFIG_FILE}"
 			config = YAML.load_file CONFIG_FILE
 			res = true
 		rescue Exception => e
-			logger.fatal e.message
+			@logger.fatal e.message
 		end # rescue
 	else
-		logger.fatal "could not find config file #{CONFIG_FILE}"
+		@logger.fatal "could not find config file #{CONFIG_FILE}"
 	end # if
 	res
 end # def
@@ -37,10 +37,10 @@ def mounts_ok
 	res = true
 	if config.has_key?(:reqd_mount)
 		if Regexp.new(config[:reqd_mount]).match(`mount`)
-			logger.debug "mount #{config[:reqd_mount]} found"
+			@logger.debug "mount #{config[:reqd_mount]} found"
 		else
 			res = false
-			logger.fatal "mount #{config[:reqd_mount]} could not be found"
+			@logger.fatal "mount #{config[:reqd_mount]} could not be found"
 		end
 	end
 	res
@@ -58,20 +58,20 @@ stop_file = config[:stop_file]
 lock_file = config[:lock_file]
 
 if File.exist? stop_file
-  logger.info { "Stop file found, mail will NOT be checked" }
+  @logger.info { "Stop file found, mail will NOT be checked" }
 else
 	Lockfile.new(lock_file, :retries => 0) do
 		begin
-			logger.info { "Checking email" }
-			logger.debug { "calling #{getmail_call}" }
+			@logger.info { "Checking email" }
+			@logger.debug { "calling #{getmail_call}" }
 			res = `#{getmail_call}`
 			if $?.to_i == 0
-				logger.info { res }
+				@logger.info { res }
 			else
-				logger. error { res }
+				@logger. error { res }
 			end
 		rescue Lockfile::MaxTriesLockError => e
-			logger.info { "Another fetcher is running" }
+			@logger.info { "Another fetcher is running" }
 		end # rescue block
 	end # Lockfile... do
 end # else
