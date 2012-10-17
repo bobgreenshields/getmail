@@ -22,7 +22,7 @@ def config_loaded
 	if File.exist? CONFIG_FILE
 		begin
 			@logger.debug "loading config file from #{CONFIG_FILE}"
-			@config = YAML.load_file @config_FILE
+			@config = YAML.load_file CONFIG_FILE
 			res = true
 		rescue Exception => e
 			@logger.fatal e.message
