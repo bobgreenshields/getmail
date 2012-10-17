@@ -26,6 +26,7 @@ def config_loaded
 			res = true
 		rescue Exception => e
 			@logger.fatal e.message
+			@logger.error e.backtrace
 		end # rescue
 	else
 		@logger.fatal "could not find @config file #{@config_FILE}"
