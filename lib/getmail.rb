@@ -22,25 +22,25 @@ def config_loaded
 	if File.exist? CONFIG_FILE
 		begin
 			@logger.debug "loading config file from #{CONFIG_FILE}"
-			config = YAML.load_file CONFIG_FILE
+			@config = YAML.load_file @config_FILE
 			res = true
 		rescue Exception => e
 			@logger.fatal e.message
 		end # rescue
 	else
-		@logger.fatal "could not find config file #{CONFIG_FILE}"
+		@logger.fatal "could not find @config file #{@config_FILE}"
 	end # if
 	res
 end # def
 
 def mounts_ok
 	res = true
-	if config.has_key?(:reqd_mount)
-		if Regexp.new(config[:reqd_mount]).match(`mount`)
-			@logger.debug "mount #{config[:reqd_mount]} found"
+	if @config.has_key?(:reqd_mount)
+		if Regexp.new(@config[:reqd_mount]).match(`mount`)
+			@logger.debug "mount #{@config[:reqd_mount]} found"
 		else
 			res = false
-			@logger.fatal "mount #{config[:reqd_mount]} could not be found"
+			@logger.fatal "mount #{@config[:reqd_mount]} could not be found"
 		end
 	end
 	res
@@ -50,29 +50,30 @@ def getmail_call
   GETMAIL_PATH + rcfiles.inject("") { |p, file| "#{p} --rcfile=#{file}"}
 end
 
-return unless config_loaded
-return unless mounts_ok
+#return unless config_loaded
+#return unless mounts_ok
 
-rcfiles = config[:rcfiles]
-stop_file = config[:stop_file]
-lock_file = config[:lock_file]
+if config_loaded and mounts_ok
+	rcfiles = @config[:rcfiles]
+	stop_file = @config[:stop_file]
+	lock_file = @config[:lock_file]
 
-if File.exist? stop_file
-  @logger.info { "Stop file found, mail will NOT be checked" }
-else
-	Lockfile.new(lock_file, :retries => 0) do
-		begin
-			@logger.info { "Checking email" }
-			@logger.debug { "calling #{getmail_call}" }
-			res = `#{getmail_call}`
-			if $?.to_i == 0
-				@logger.info { res }
-			else
-				@logger. error { res }
-			end
-		rescue Lockfile::MaxTriesLockError => e
-			@logger.info { "Another fetcher is running" }
-		end # rescue block
-	end # Lockfile... do
-end # else
-
+	if File.exist? stop_file
+		@logger.info { "Stop file found, mail will NOT be checked" }
+	else
+		Lockfile.new(lock_file, :retries => 0) do
+			begin
+				@logger.info { "Checking email" }
+				@logger.debug { "calling #{getmail_call}" }
+				res = `#{getmail_call}`
+				if $?.to_i == 0
+					@logger.info { res }
+				else
+					@logger. error { res }
+				end
+			rescue Lockfile::MaxTriesLockError => e
+				@logger.info { "Another fetcher is running" }
+			end # rescue block
+		end # Lockfile... do
+	end # else
+end # if config_load...
