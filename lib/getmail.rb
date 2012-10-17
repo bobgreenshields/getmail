@@ -60,16 +60,18 @@ if File.exist? stop_file
   logger.info { "Stop file found, mail will NOT be checked" }
 else
 	Lockfile.new(lock_file, :retries => 0) do
-		logger.info { "Checking email" }
-		logger.debug { "calling #{getmail_call}" }
-		res = `#{getmail_call}`
-		if $?.to_i == 0
-			logger.info { res }
-		else
-			logger. error { res }
-		end
+		begin
+			logger.info { "Checking email" }
+			logger.debug { "calling #{getmail_call}" }
+			res = `#{getmail_call}`
+			if $?.to_i == 0
+				logger.info { res }
+			else
+				logger. error { res }
+			end
 		rescue Lockfile::MaxTriesLockError => e
 			logger.info { "Another fetcher is running" }
+		end # rescue block
 	end # Lockfile... do
 end # else
 
