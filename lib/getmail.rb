@@ -72,7 +72,7 @@ if config_loaded and mounts_ok
 				else
 					@logger. error { res }
 				end
-			rescue Lockfile::MaxTriesLockError => e
+			rescue Lockfile::LockError => e
 				@logger.info { "Another fetcher is running" }
 			end # rescue block
 		end # Lockfile... do
