@@ -3,7 +3,7 @@ require 'rubygems'
 require 'lockfile'
 require 'yaml'
 
-CONFIG_FILE = File.join(ENV['HOME'], '.getmailrb')
+CONFIG_FILE = File.join(ENV['HOME'], '.getmail',  'getmailrb')
 LOG_DIR = '/var/log/getmail'
 LOG_FILE = 'getmail.log'
 LOG_PATH = File.join(LOG_DIR, LOG_FILE)
